@@ -121,13 +121,22 @@ def explain(points, target, dispersion = None, lambda_global = None, lambda_ind 
     sess, rep, X, delta_global, delta_ind = load_vae(use_delta = True)
 
     T = tf.placeholder(tf.float32, shape=[None, 2])
-    loss = ( tf.losses.mean_squared_error(T, rep) +
-            dispersion * tf.reduce_mean(1 / (1 + pdist(rep))) +
-            lambda_global * tf.reduce_mean(tf.abs(delta_global)) +
-            lambda_ind * tf.reduce_mean(tf.abs(delta_ind)) )
+    l_t = tf.losses.mean_squared_error(T, rep)
+    tf.summary.scalar("loss/t", l_t)
+    l_d = dispersion * tf.reduce_mean(1 / (1 + pdist(rep)))
+    tf.summary.scalar("loss/d", l_d)
+    l_g = lambda_global * tf.reduce_mean(tf.abs(delta_global / normalizer))
+    tf.summary.scalar("loss/g", l_g)
+    l_i = lambda_ind * tf.reduce_mean(tf.abs(delta_ind / normalizer))
+    tf.summary.scalar("loss/i", l_i)
+
+    loss = l_t + l_d + l_g + l_i
     grad = tf.gradients(loss, [delta_global, delta_ind])
     new_global = delta_global.assign(delta_global - 0.05 * grad[0])
     new_ind = delta_ind.assign(delta_ind - 0.05 * grad[1])
+    
+    summary_op = tf.summary.merge_all()
+    writer = tf.summary.FileWriter("tb/" + name, sess.graph)
 
     # Find the explanation
     points_rep = sess.run(rep, feed_dict={X: points})
@@ -135,6 +144,9 @@ def explain(points, target, dispersion = None, lambda_global = None, lambda_ind 
 
     for i in range(500): #TODO:  stopping condition
         grad = sess.run([new_global, new_ind], feed_dict={X: points, T: target})
+        if i % 10 == 0:
+            summary = sess.run(summary_op, feed_dict={X: points, T: target})
+            writer.add_summary(summary, i)
 
     points_rep = sess.run(rep, feed_dict={X: points})
     plt.scatter(points_rep[:,0], points_rep[:,1], marker = "^", c = "violet", s = 16)
@@ -142,6 +154,8 @@ def explain(points, target, dispersion = None, lambda_global = None, lambda_ind 
     plt.subplot(2,1,2)
 
     d_g, d_i = sess.run([delta_global, delta_ind])
+    d_g = d_g / normalizer
+    d_i = d_i / normalizer
     axis = np.array(range(x.shape[1]))
 
     plt.scatter(axis, d_g, label = "Delta Global", marker = "x")
@@ -150,22 +164,22 @@ def explain(points, target, dispersion = None, lambda_global = None, lambda_ind 
 
     plt.legend(fancybox=True, framealpha=0.5)
 
-    plt.savefig(name)
+    plt.savefig(name + ".pdf")
     
     plt.close()
     
     return d_g, d_i
 
-def map(c1, c2, dispersion = 1.0, lambda_global = 0.01, lambda_ind = 0.75, noise = 0.3):
+def map(c1, c2, dispersion = 1.5, lambda_global = 10.0, lambda_ind = 20.0, noise = 0.4):
     points = np.random.uniform(low = -1.0 * noise, high = noise, size = (batch_size, 9)) + centers[c1, :]
     target = np.reshape(centers_out[c2, :], (1, 2))
-    return explain(points, target, dispersion = dispersion, lambda_global = lambda_global, lambda_ind = lambda_ind, name = str(c1) + "to" + str(c2) + ".pdf")
+    return explain(points, target, dispersion = dispersion, lambda_global = lambda_global, lambda_ind = lambda_ind, name = str(c1) + "to" + str(c2))
 
-global_0_1, ind = map(0,1, noise = 3.0)
+global_0_1, ind = map(0,1, noise = 2.0)
 global_1_0, _ = map(1,0, dispersion = 10.0)
 global_1_2, _ = map(1,2)
 global_2_1, _ = map(2,1)
-global_0_2, _ = map(0,2, noise = 3.0)
+global_0_2, _ = map(0,2, noise = 2.0)
 
 sys.stdout = open("output.txt","wt")
 print("From 0 to 1 and then 1 to 0")
@@ -176,4 +190,3 @@ print("From 0 to 1 and then 1 to 2 compared to from 0 to 2")
 print(np.round(global_0_2 - (global_0_1 + global_1_2), 3))
 
 map(2,4)
-
