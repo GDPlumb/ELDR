@@ -181,12 +181,15 @@ global_1_2, _ = map(1,2)
 global_2_1, _ = map(2,1)
 global_0_2, _ = map(0,2, noise = 2.0)
 
+def scale(a2b, b2a):
+    return (a2b + b2a) / (0.5 * np.sum(np.abs(a2b)) + 0.5 * np.sum(np.abs(b2a)))
+
 sys.stdout = open("output.txt","wt")
 print("From 0 to 1 and then 1 to 0")
-print(np.round(global_0_1 + global_1_0, 3))
+print(np.round(scale(global_0_1, global_1_0), 3))
 print("From 1 to 2 and then 2 to 1")
-print(np.round(global_1_2 + global_2_1, 3))
+print(np.round(scale(global_1_2, global_2_1), 3))
 print("From 0 to 1 and then 1 to 2 compared to from 0 to 2")
-print(np.round(global_0_2 - (global_0_1 + global_1_2), 3))
+print(np.round(scale(global_0_2, -1.0 * (global_0_1 + global_1_2)), 3))
 
 map(2,4)
