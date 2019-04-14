@@ -53,10 +53,6 @@ def pdist(X):
   x2 = tf.reduce_sum(X * X, 1, True)
   return x2 - 2 * tf.matmul(X, tf.transpose(X)) + tf.transpose(x2)
 
-###
-# Load the pretrained VAE and add our delta's
-###
-
 def load_vae(num_points):
     tf.reset_default_graph()
     
@@ -153,3 +149,5 @@ def explain(x, y, indices, c1, c2, num_points = 20, dispersion = 1.5, lambda_glo
     plt.close()
     
     return d_g, d_i
+
+
