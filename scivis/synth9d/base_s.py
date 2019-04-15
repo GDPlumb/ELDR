@@ -29,7 +29,7 @@ def load_vae_s(num_points):
     delta_d1 = tf.Variable(tf.zeros(shape = [num_points, 9]), name = "delta_d1")
     delta_d2 = tf.Variable(tf.zeros(shape = [num_points, 9]), name = "delta_d2")
 
-    input = X + D * delta + 0.5 * (D + 1.0) * delta_d1 + 0.5 * (D - 1.0) * delta_d2
+    input = X + D * delta + 0.5 * (D[0,0] + 1.0) * delta_d1 + 0.5 * (D[0,0] - 1.0) * delta_d2
 
     vae = GaussianVAE(input, 1, architecture['inference']['layer_size'], architecture['latent_dimension'], decoder_layer_size=architecture['model']['layer_size'])
     rep, _ = vae.encoder(prob = 1.0)
@@ -46,7 +46,7 @@ def load_vae_s(num_points):
 
     return sess, rep, X, D, delta, delta_d1, delta_d2
 
-def explain_s(x, y, indices, c1, c2, num_points = 20, dispersion = 1.5, lambda_global = 0.5, lambda_ind = 4):
+def explain_s(x, y, indices, c1, c2, num_points = 20, dispersion_c1 = 1.0, dispersion_c2 = 1.0, lambda_global = 0.5, lambda_ind = 4):
     name = str(c1) + "to" + str(c2)
     
     # Visualize the data
@@ -69,11 +69,11 @@ def explain_s(x, y, indices, c1, c2, num_points = 20, dispersion = 1.5, lambda_g
     T = tf.placeholder(tf.float32, shape=[None, 2])
     l_t = tf.losses.mean_squared_error(T, rep)
     tf.summary.scalar("loss/t", l_t)
-    l_d = dispersion * tf.reduce_mean(1 / (1 + pdist(rep)))
+    l_d = (dispersion_c1 * -0.5 * (D[0,0] - 1.0) + dispersion_c2 * 0.5 * (D[0,0] + 1.0)) * tf.reduce_mean(1 / (1 + pdist(rep)))
     tf.summary.scalar("loss/d", l_d)
     l_g = lambda_global * tf.reduce_mean(tf.abs(delta))
     tf.summary.scalar("loss/g", l_g)
-    l_i = lambda_ind * tf.reduce_mean(tf.abs(0.5 * (D + 1.0) * delta_d1 + 0.5 * (D - 1.0) * delta_d2))
+    l_i = lambda_ind * tf.reduce_mean(tf.abs(0.5 * (D[0,0] + 1.0) * delta_d1 + 0.5 * (D[0,0] - 1.0) * delta_d2))
     tf.summary.scalar("loss/i", l_i)
 
     loss = l_t + l_d + l_g + l_i
