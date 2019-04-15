@@ -150,4 +150,21 @@ def explain(x, y, indices, c1, c2, num_points = 20, dispersion = 1.5, lambda_glo
     
     return d_g, d_i
 
+# https://stackoverflow.com/questions/37009647/compute-pairwise-distance-in-a-batch-without-replicating-tensor-in-tensorflow
+def pairwise_l2_norm2(x, y, scope=None):
+    with tf.name_scope("pairwise_l2_norm2"):
+        size_x = tf.shape(x)[0]
+        size_y = tf.shape(y)[0]
+        xx = tf.expand_dims(x, -1)
+        xx = tf.tile(xx, tf.stack([1, 1, size_y]))
 
+        yy = tf.expand_dims(y, -1)
+        yy = tf.tile(yy, tf.stack([1, 1, size_x]))
+        yy = tf.transpose(yy, perm=[2, 1, 0])
+
+        diff = xx - yy
+        square_diff = tf.square(diff)
+
+        square_dist = tf.reduce_sum(square_diff, 1)
+
+        return square_dist

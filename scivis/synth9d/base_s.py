@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, "../scvis-dev/lib/scvis/")
 from vae import GaussianVAE
 
-from base import pdist
+from base import pdist, pairwise_l2_norm2
 
 def load_vae_s(num_points):
     tf.reset_default_graph()
@@ -46,7 +46,7 @@ def load_vae_s(num_points):
 
     return sess, rep, X, D, delta, delta_d1, delta_d2
 
-def explain_s(x, y, indices, c1, c2, num_points = 20, dispersion_c1 = 1.0, dispersion_c2 = 1.0, lambda_global = 0.5, lambda_ind = 4):
+def explain_s(x, y, indices, c1, c2, num_points = 30, dispersion_c1 = 1.5, dispersion_c2 = 1.5, lambda_global = 0.5, lambda_ind = 4.0):
     name = str(c1) + "to" + str(c2)
     
     # Visualize the data
@@ -55,19 +55,21 @@ def explain_s(x, y, indices, c1, c2, num_points = 20, dispersion_c1 = 1.0, dispe
     plt.subplot(2,1,1)
     plt.scatter(y[:, 0], y[:, 1], s = 12)
     
-    # Sample num_points in clusters c1 and c2 from x
-    points_c1 = x[np.random.choice(indices[c1], num_points, replace = False)]
-    points_c2 = x[np.random.choice(indices[c2], num_points, replace = False)]
+    # Sample num_points in clusters c1 and c2 from x and y
+    indices_c1 = np.random.choice(indices[c1], num_points, replace = False)
+    indices_c2 = np.random.choice(indices[c2], num_points, replace = False)
+
+    points_c1 = x[indices_c1]
+    points_c2 = x[indices_c2]
     
-    # The target point is the center of the other cluster in y
-    target_c1 = np.mean(y[indices[c1], :], axis = 0).reshape((1,2))
-    target_c2 = np.mean(y[indices[c2], :], axis = 0).reshape((1,2))
+    targets_c1 = y[indices_c1]
+    targets_c2 = y[indices_c2]
 
     # Define the objective function
     sess, rep, X, D, delta, delta_d1, delta_d2 = load_vae_s(num_points)
 
     T = tf.placeholder(tf.float32, shape=[None, 2])
-    l_t = tf.losses.mean_squared_error(T, rep)
+    l_t = tf.reduce_mean(tf.reduce_min(pairwise_l2_norm2(rep, T), axis = 1))
     tf.summary.scalar("loss/t", l_t)
     l_d = (dispersion_c1 * -0.5 * (D[0,0] - 1.0) + dispersion_c2 * 0.5 * (D[0,0] + 1.0)) * tf.reduce_mean(1 / (1 + pdist(rep)))
     tf.summary.scalar("loss/d", l_d)
@@ -93,13 +95,13 @@ def explain_s(x, y, indices, c1, c2, num_points = 20, dispersion_c1 = 1.0, dispe
     plt.scatter(y_c1[:,0], y_c1[:,1], marker = "v", c = "violet", s = 64)
     plt.scatter(y_c2[:,0], y_c2[:,1], marker = "v", c = "red", s = 64)
 
-    for i in range(1001): #TODO:  stopping condition
+    for i in range(2001): #TODO:  stopping condition
 
         if d[0] == 1.0:
-            dict = {X: points_c1, T: target_c2, D: d}
+            dict = {X: points_c1, T: targets_c2, D: d}
             sess.run([new_global, new_d1], feed_dict = dict)
         else:
-            dict = {X: points_c2, T: target_c1, D: d}
+            dict = {X: points_c2, T: targets_c1, D: d}
             sess.run([new_global, new_d2], feed_dict = dict)
     
         if i % 25 == 0:
