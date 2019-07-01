@@ -53,18 +53,19 @@ def explain(load_model, x, y, indices, c1, c2, num_points = 20, dispersion = 1.5
 
     T = tf.placeholder(tf.float32, shape=[None, 2])
     l_t = tf.losses.mean_squared_error(T, rep)
-    tf.summary.scalar("loss/t", l_t)
+    tf.summary.scalar("loss/target", l_t)
     l_d = dispersion * tf.reduce_mean(1 / (1 + pdist(rep)))
-    tf.summary.scalar("loss/d", l_d)
+    tf.summary.scalar("loss/dispersion", l_d)
     l_g = lambda_global * tf.reduce_mean(tf.abs(delta_global))
-    tf.summary.scalar("loss/g", l_g)
+    tf.summary.scalar("loss/global", l_g)
     l_i = lambda_ind * tf.reduce_mean(tf.abs(delta_ind))
-    tf.summary.scalar("loss/i", l_i)
+    tf.summary.scalar("loss/individual", l_i)
 
     loss = l_t + l_d + l_g + l_i
+    tf.summary.scalar("loss/total", loss)
     grad = tf.gradients(loss, [delta_global, delta_ind])
-    new_global = delta_global.assign(delta_global - 0.05 * grad[0])
-    new_ind = delta_ind.assign(delta_ind - 0.05 * grad[1])
+    new_global = delta_global.assign(delta_global - 0.01 * grad[0])
+    new_ind = delta_ind.assign(delta_ind - 0.01 * grad[1])
     
     summary_op = tf.summary.merge_all()
     writer = tf.summary.FileWriter("tb/" + name, sess.graph)
@@ -73,7 +74,7 @@ def explain(load_model, x, y, indices, c1, c2, num_points = 20, dispersion = 1.5
     points_rep = sess.run(rep, feed_dict={X: points})
     plt.scatter(points_rep[:,0], points_rep[:,1], marker = "v", c = "violet", s = 64)
 
-    for i in range(500): #TODO:  stopping condition
+    for i in range(1000): #TODO:  stopping condition
         grad = sess.run([new_global, new_ind], feed_dict={X: points, T: target})
         if i % 10 == 0:
             summary = sess.run(summary_op, feed_dict={X: points, T: target})
@@ -123,19 +124,20 @@ def explain_sym(load_model, x, y, indices, c1, c2, num_points = 30, dispersion_c
 
     T = tf.placeholder(tf.float32, shape=[None, 2])
     l_t = tf.reduce_mean(tf.reduce_min(pairwise_l2_norm2(rep, T), axis = 1))
-    tf.summary.scalar("loss/t", l_t)
+    tf.summary.scalar("loss/target", l_t)
     l_d = (dispersion_c1 * -0.5 * (D[0,0] - 1.0) + dispersion_c2 * 0.5 * (D[0,0] + 1.0)) * tf.reduce_mean(1 / (1 + pdist(rep)))
-    tf.summary.scalar("loss/d", l_d)
+    tf.summary.scalar("loss/dispersion", l_d)
     l_g = lambda_global * tf.reduce_mean(tf.abs(delta))
-    tf.summary.scalar("loss/g", l_g)
+    tf.summary.scalar("loss/global", l_g)
     l_i = lambda_ind * tf.reduce_mean(tf.abs(0.5 * (D[0,0] + 1.0) * delta_d1 + 0.5 * (D[0,0] - 1.0) * delta_d2))
-    tf.summary.scalar("loss/i", l_i)
+    tf.summary.scalar("loss/individual", l_i)
 
     loss = l_t + l_d + l_g + l_i
+    tf.summary.scalar("loss/total", loss)
     grad = tf.gradients(loss, [delta, delta_d1, delta_d2])
-    new_global = delta.assign(delta - 0.05 * tf.clip_by_value(grad[0], -10.0, 10.0))
-    new_d1 = delta_d1.assign(delta_d1 - 0.05 * tf.clip_by_value(grad[1], -10.0, 10.0))
-    new_d2 = delta_d2.assign(delta_d2 - 0.05 * tf.clip_by_value(grad[2], -10.0, 10.0))
+    new_global = delta.assign(delta - 0.001 * tf.clip_by_value(grad[0], -5.0, 5.0))
+    new_d1 = delta_d1.assign(delta_d1 - 0.001 * tf.clip_by_value(grad[1], -5.0, 5.0))
+    new_d2 = delta_d2.assign(delta_d2 - 0.001 * tf.clip_by_value(grad[2], -5.0, 5.0))
     
     summary_op = tf.summary.merge_all()
     writer = tf.summary.FileWriter("tb/" + name, sess.graph)
@@ -148,7 +150,7 @@ def explain_sym(load_model, x, y, indices, c1, c2, num_points = 30, dispersion_c
     plt.scatter(y_c1[:,0], y_c1[:,1], marker = "v", c = "violet", s = 64)
     plt.scatter(y_c2[:,0], y_c2[:,1], marker = "v", c = "red", s = 64)
 
-    for i in range(2001): #TODO:  stopping condition
+    for i in range(4001): #TODO:  stopping condition
 
         if d[0] == 1.0:
             dict = {X: points_c1, T: targets_c2, D: d}

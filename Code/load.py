@@ -1,16 +1,18 @@
 
+import numpy as np
+import pandas as pd
 import tensorflow as tf
 import yaml
 
 import sys
-sys.path.insert(0, "../scvis-dev/lib/scvis/")
+sys.path.insert(0, "../scvis/lib/scvis/")
 from vae import GaussianVAE
 
 def load_original(input_dim, model_file):
     tf.reset_default_graph()
     
     try:
-        config_file_yaml = open("../scvis-dev/lib/scvis/config/model_config.yaml", "r")
+        config_file_yaml = open("../scvis/lib/scvis/config/model_config.yaml", "r")
         config = yaml.load(config_file_yaml, Loader = yaml.FullLoader)
         config_file_yaml.close()
     except yaml.YAMLError as exc:
@@ -35,7 +37,7 @@ def load_vae(input_dim, model_file, num_points):
     tf.reset_default_graph()
     
     try:
-        config_file_yaml = open("../scvis-dev/lib/scvis/config/model_config.yaml", "r")
+        config_file_yaml = open("../scvis/lib/scvis/config/model_config.yaml", "r")
         config = yaml.load(config_file_yaml, Loader = yaml.FullLoader)
         config_file_yaml.close()
     except yaml.YAMLError as exc:
@@ -62,11 +64,11 @@ def load_vae(input_dim, model_file, num_points):
 
     return sess, rep, X, delta_global, delta_ind
 
-def load_vae_sym(input_dim, model_file, num_points):
+def load_vae_sym(input_dim, model_file, num_points, feature_transform = None):
     tf.reset_default_graph()
     
     try:
-        config_file_yaml = open("../scvis-dev/lib/scvis/config/model_config.yaml", "r")
+        config_file_yaml = open("../scvis/lib/scvis/config/model_config.yaml", "r")
         config = yaml.load(config_file_yaml, Loader = yaml.FullLoader)
         config_file_yaml.close()
     except yaml.YAMLError as exc:
@@ -83,7 +85,11 @@ def load_vae_sym(input_dim, model_file, num_points):
     delta_d2 = tf.Variable(tf.zeros(shape = [num_points, input_dim]), name = "delta_d2")
 
     input = X + D * delta + 0.5 * (D[0,0] + 1.0) * delta_d1 + 0.5 * (D[0,0] - 1.0) * delta_d2
-
+    
+    if feature_transform is not None:
+        matrix =  np.float32(pd.read_csv(feature_transform, sep="\t", header = None).values)
+        input = tf.matmul(input, matrix)
+    
     vae = GaussianVAE(input, 1, architecture["inference"]["layer_size"], architecture["latent_dimension"], decoder_layer_size=architecture["model"]["layer_size"])
     rep, _ = vae.encoder(prob = 1.0)
 
