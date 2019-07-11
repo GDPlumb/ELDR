@@ -132,7 +132,7 @@ def explain(load_model, x, y, indices, c1, c2,
     
     # Plot the chosen points before perturbing them
     y_c1 = sess.run(rep, feed_dict={X: points_c1})
-    plt.scatter(y_c1[:,0], y_c1[:,1], marker = "v", c = "violet", s = 64)
+    plt.scatter(y_c1[:,0], y_c1[:,1], marker = "v", c = "green", s = 64)
 
     # Find the explanation
     epoch = 0
@@ -164,7 +164,7 @@ def explain(load_model, x, y, indices, c1, c2,
 
     # Plot the chosen points after perturbing them
     y_c1 = sess.run(rep, feed_dict={X: points_c1})
-    plt.scatter(y_c1[:,0], y_c1[:,1], marker = "^", c = "violet", s = 64)
+    plt.scatter(y_c1[:,0], y_c1[:,1], marker = "v", c = "red", s = 64)
 
     # Plot the explanation (perturbation)
     plt.subplot(2,1,2)
@@ -184,3 +184,34 @@ def explain(load_model, x, y, indices, c1, c2,
     
     # Return the global and individual explantions
     return np.ndarray.flatten(d_g), np.ndarray.flatten(d_i)
+
+def apply(load_model, x, y, indices, c1, d_g, num_points = 20):
+
+    # Visualize the data
+    fig, ax = plt.subplots(figsize=(20, 10))
+
+    plt.subplot(2,1,1)
+    plt.scatter(y[:, 0], y[:, 1], s = 12)
+    
+    # Sample num_points in cluster c1
+    indices_c1 = np.random.choice(indices[c1], num_points, replace = False)
+
+    points_c1 = x[indices_c1]
+    
+    # Load the model
+    sess, rep, X, delta_global, delta_ind = load_model(num_points)
+    
+    # Plot the chosen points before perturbing them
+    y_c1 = sess.run(rep, feed_dict={X: points_c1})
+    plt.scatter(y_c1[:,0], y_c1[:,1], marker = "v", c = "green", s = 64)
+    
+    # Set the global explanation
+    sess.run(delta_global.assign(d_g))
+
+    # Plot the chosen points after perturbing them
+    y_c1 = sess.run(rep, feed_dict={X: points_c1})
+    plt.scatter(y_c1[:,0], y_c1[:,1], marker = "v", c = "red", s = 64)
+
+    plt.show()
+    
+    plt.close()
