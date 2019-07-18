@@ -185,7 +185,7 @@ def explain(load_model, x, y, indices, c1, c2,
     # Return the global and individual explantions
     return np.ndarray.flatten(d_g), np.ndarray.flatten(d_i)
 
-def apply(load_model, x, y, indices, c1, d_g, num_points = 20):
+def apply(load_model, x, y, indices, c1, d_g, num_points = 50):
 
     # Visualize the data
     fig, ax = plt.subplots(figsize=(20, 10))
