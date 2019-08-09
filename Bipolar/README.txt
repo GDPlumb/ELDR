@@ -3,7 +3,7 @@
 
 2.  Run "train_scvis.sh" in order to train the scvis model on the Bipolar data
 
-3.  Set "num_clusters" in "Vertices/run.py" and then run it 
+3.  Set "num_clusters" in "vertices.py" and then run it 
 -  Hit return after selecting a cluster (it should clear the markers)
 -  Close the plotting window after selecting "num_clusters" clusters (it won't close on its own)
 
