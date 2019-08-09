@@ -17,7 +17,7 @@ num_clusters = 4
 
 x = pd.read_csv(data_file, sep="\t").values
 
-sess, rep, X, D = load_vae(input_dim, model_file, 1)
+sess, rep, X, D = load_vae(input_dim, model_file)
 
 d = np.zeros((1, x.shape[1]))
 

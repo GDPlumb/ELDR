@@ -45,7 +45,7 @@ def explain(load_model, x, y, indices,
     num_clusters = len(indices)
 
     # Define the objective function
-    sess, rep, X, D = load_model(num_points)
+    sess, rep, X, D = load_model()
 
     T = tf.placeholder(tf.float32, shape=[None, n_output])
     l_t = tf.reduce_mean(tf.reduce_min(pairwise_l2_norm2(rep, T), axis = 1))
@@ -140,7 +140,7 @@ def apply(load_model, x, y, indices, c1, d_g, num_points = 50):
     points_c1 = x[indices_c1]
     
     # Load the model
-    sess, rep, X, D = load_model(num_points)
+    sess, rep, X, D = load_model()
     d = np.zeros((1, x.shape[1]))
     
     # Plot the chosen points before perturbing them

@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, "../scvis/lib/scvis/")
 from vae import GaussianVAE
 
-def load_vae(input_dim, model_file, num_points, feature_transform = None):
+def load_vae(input_dim, model_file, feature_transform = None):
 
     tf.reset_default_graph()
     
