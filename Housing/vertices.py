@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pickle
 
-num_clusters = 5
+num_clusters = 4
 
 data_rep = pickle.load(open("Model/points.pkl", "rb" ))
 

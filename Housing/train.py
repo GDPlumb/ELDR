@@ -17,7 +17,7 @@ import tensorflow as tf
 from base import MLP, BatchManager, load_data
 
 def train(x_train, y_train, x_val, y_val, x_test, y_test,
-            encoder_shape = [100, 100, 100, 2], decoder_shape = [2, 100, 100, 100], learner_shape = [2, 100, 100, 100, 1], recon_weight = 5,
+            encoder_shape = [100, 100, 100, 2], decoder_shape = [2, 100, 100, 100], learner_shape = [2, 200, 200, 200, 1], recon_weight = 5,
             learning_rate = 0.001, batch_size = 64, min_epochs = 500, stopping_epochs = 50, tol = 0.001, freq_eval = 1):
     
     # Allow multiple sessions on a single GPU.
