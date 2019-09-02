@@ -123,8 +123,42 @@ def explain(load_model, x, y, indices,
         iter += 1
 
     writer.flush()
+    
+    score = eval(load_model, x, y, indices, best_deltas)
 
-    return best_deltas
+    return best_deltas, score
+
+def eval(load_model, x, y, indices, deltas):
+    
+    n_input = x.shape[1]
+    n_output = y.shape[1]
+    num_clusters = len(indices)
+
+    # Define the objective function
+    sess, rep, X, D = load_model()
+
+    T = tf.placeholder(tf.float32, shape=[None, n_output])
+    l_t = tf.reduce_mean(pairwise_l2_norm2(rep, T)) #This is probably equivalent to distance between cluster means
+
+    dists = []
+    for initial in range(num_clusters):
+        for target in range(num_clusters):
+            if initial != target:
+
+                p = x[indices[initial]]
+                t = y[indices[target]]
+
+                if initial == 0:
+                    d = deltas[target - 1]
+                elif target == 0:
+                    d = -1.0 * deltas[initial - 1]
+                else:
+                    d = -1.0 * deltas[initial - 1] + deltas[target - 1]
+
+                dists.append(sess.run(l_t, feed_dict={X: p, T: t, D: np.reshape(d, (1, n_input))}))
+
+    return np.mean(dists)
+
 
 def apply(load_model, x, y, indices, c1, d_g, num_points = 50):
 
