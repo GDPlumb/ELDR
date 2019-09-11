@@ -37,7 +37,8 @@ def pairwise_l2_norm2(x, y, scope=None):
         return square_dist
 
 def explain(load_model, x, y, indices,
-            num_points = 100, dispersion = 2.0, lambda_global = 0.5,
+            init_mode = "mean",
+            num_points = 100, dispersion = 0.0, lambda_global = 0.5,
             learning_rate = 0.0001, clip_val = 5.0, min_iters = 2000, stopping_iters = 500, tol = 0.001, discount = 0.9):
     
     n_input = x.shape[1]
@@ -67,7 +68,13 @@ def explain(load_model, x, y, indices,
     grad = tf.gradients(loss_op, [D])
 
     # Find the explanation
-    deltas = np.zeros((num_clusters - 1, n_input)) #Row i is the explanation for "Cluster 0 to Cluster i + 1"
+    if init_mode == "zeros":
+        deltas = np.zeros((num_clusters - 1, n_input)) #Row i is the explanation for "Cluster 0 to Cluster i + 1"
+    elif init_mode == "mean":
+        deltas = np.zeros((num_clusters - 1, n_input))
+        mean_ref = np.mean(x[indices[0]], axis = 0)
+        for i in range(1, num_clusters):
+            deltas[i - 1] = np.mean(x[indices[i]], axis = 0) - mean_ref
     
     iter = 0
     best_iter = 0
@@ -123,42 +130,8 @@ def explain(load_model, x, y, indices,
         iter += 1
 
     writer.flush()
-    
-    score = eval(load_model, x, y, indices, best_deltas)
 
-    return best_deltas, score
-
-def eval(load_model, x, y, indices, deltas):
-    
-    n_input = x.shape[1]
-    n_output = y.shape[1]
-    num_clusters = len(indices)
-
-    # Define the objective function
-    sess, rep, X, D = load_model()
-
-    T = tf.placeholder(tf.float32, shape=[None, n_output])
-    l_t = tf.reduce_mean(pairwise_l2_norm2(rep, T)) #This is probably equivalent to distance between cluster means
-
-    dists = []
-    for initial in range(num_clusters):
-        for target in range(num_clusters):
-            if initial != target:
-
-                p = x[indices[initial]]
-                t = y[indices[target]]
-
-                if initial == 0:
-                    d = deltas[target - 1]
-                elif target == 0:
-                    d = -1.0 * deltas[initial - 1]
-                else:
-                    d = -1.0 * deltas[initial - 1] + deltas[target - 1]
-
-                dists.append(sess.run(l_t, feed_dict={X: p, T: t, D: np.reshape(d, (1, n_input))}))
-
-    return np.mean(dists)
-
+    return best_deltas
 
 def apply(load_model, x, y, indices, c1, d_g, num_points = 50):
 
