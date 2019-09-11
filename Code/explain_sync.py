@@ -38,7 +38,7 @@ def pairwise_l2_norm2(x, y, scope=None):
 
 def explain(load_model, x, y, indices,
             init_mode = "mean",
-            num_points = 100, dispersion = 0.0, lambda_global = 0.5,
+            num_points = 20, dispersion = 0.0, lambda_global = 0.5,
             learning_rate = 0.0001, clip_val = 5.0, min_iters = 2000, stopping_iters = 500, tol = 0.001, discount = 0.9):
     
     n_input = x.shape[1]
