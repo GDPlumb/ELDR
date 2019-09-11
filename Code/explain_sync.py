@@ -39,7 +39,8 @@ def pairwise_l2_norm2(x, y, scope=None):
 def explain(load_model, x, y, indices,
             init_mode = "mean",
             num_points = 20, dispersion = 0.0, lambda_global = 0.5,
-            learning_rate = 0.0001, clip_val = 5.0, min_iters = 2000, stopping_iters = 500, tol = 0.001, discount = 0.9):
+            learning_rate = 0.0001, clip_val = 5.0, min_iters = 2000, stopping_iters = 500, tol = 0.001, discount = 0.9,
+            verbose = False):
     
     n_input = x.shape[1]
     n_output = y.shape[1]
@@ -112,7 +113,8 @@ def explain(load_model, x, y, indices,
             best_iter = iter
             best_loss = ema
             best_deltas = deltas
-            print(iter, ema)
+            if verbose:
+                print(iter, ema)
 
         writer.add_summary(summary, iter)
 
