@@ -13,7 +13,7 @@ from load_vae import load_vae
 data_file = "Data/bipolar_rep_scaled.tsv"
 input_dim = 100
 model_file = "Model/model/perplexity_10_regularizer_0.001_batch_size_512_learning_rate_0.01_latent_dimension_2_activation_ELU_seed_1_iter_5400.ckpt"
-num_clusters = 4
+num_clusters = 18
 
 x = pd.read_csv(data_file, sep="\t").values
 
