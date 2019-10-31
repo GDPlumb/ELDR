@@ -56,7 +56,7 @@ def train_ae(x,
 
     # Define the loss and optimizer
     recon_loss = tf.losses.mean_squared_error(labels = X, predictions = recon)
-    tf.summary.scalar("Recon MSE", recon_loss)
+    tf.summary.scalar("ReconMSE", recon_loss)
     
     loss_op = recon_loss
     tf.summary.scalar("Loss", loss_op)
