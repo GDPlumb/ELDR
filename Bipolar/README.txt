@@ -7,4 +7,4 @@
 -  Hit return after selecting a cluster (it should clear the markers)
 -  Close the plotting window after selecting "num_clusters" clusters (it won't close on its own)
 
-4.  Run "run_sync.ipynb" to visualize the clusters and their explanations
+4.  Run "run.ipynb" to visualize the clusters and their explanations

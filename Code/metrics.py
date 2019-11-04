@@ -55,3 +55,16 @@ def metrics(load_model, x, indices, deltas, epsilon):
                 coverage[initial, target] = np.mean(1.0 * (np.sum(close_enough, axis = 0) >= threshold))
 
     return correctness, coverage
+    
+def eval_epsilon(load_model, x, indices, epsilon):
+
+    input_dim = x.shape[1]
+    num_clusters = len(indices)
+
+    a, b = metrics(load_model, x, indices, np.zeros((num_clusters - 1, input_dim)), epsilon)
+
+    d = np.diagonal(a)
+
+    file = open("epsilon.txt","w")
+    file.write(str(np.mean(d)) + " " + str(np.min(d)) + " " + str(np.max(d)))
+    file.close()
