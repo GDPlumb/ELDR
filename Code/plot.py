@@ -20,7 +20,7 @@ def plot_polys(data_rep, vertices):
     plt.show()
     plt.close()
 
-def plot_groups(x, data_rep, num_clusters, labels, name = "plot_groups.png"):
+def plot_groups(x, data_rep, num_clusters, labels, contour = None, name = "plot_groups.png"):
 
     n = x.shape[0]
     cluster = -1.0 * np.ones((n))
@@ -47,6 +47,13 @@ def plot_groups(x, data_rep, num_clusters, labels, name = "plot_groups.png"):
 
     for i in range(num_clusters):
         plt.text(centers[i, 0], centers[i, 1], str(i),  fontsize = 36)
+        
+    if contour is not None:
+        feature_0 = contour[0]
+        feature_1 = contour[1]
+        map = contour[2]
+        plt.contour(feature_0, feature_1, map)
+        plt.colorbar()
 
     plt.savefig(name)
     plt.show()

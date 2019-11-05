@@ -162,6 +162,10 @@ def train_reg(x, y,
 
         plt.savefig("learned_function.pdf")
         plt.close()
+        
+        pickle.dump(map, open("map.pkl", "wb"))
+        pickle.dump(feature_0, open("f0.pkl", "wb"))
+        pickle.dump(feature_1, open("f1.pkl", "wb"))
 
         pickle.dump(points, open("points.pkl", "wb"))
 
