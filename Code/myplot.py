@@ -145,7 +145,7 @@ def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  nu
 
     feature_index = np.array(range(d.shape[1]))
     plt.scatter(feature_index, d, marker = "x")
-    plt.title("Change applied to each feature to go from " + str(initial) + " to " + str(target))
+    plt.title("Change applied to each feature to go from " + str(c1) + " to " + str(c2))
 
     plt.savefig(name)
     plt.show()

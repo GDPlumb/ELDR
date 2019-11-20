@@ -114,7 +114,13 @@ def train_ae(x,
         saver.restore(sess, "./model.cpkt")
 
         # Find the 2d point representation
-        points = sess.run(rep, {X: x})
+        points = np.zeros((n, 2))
+        for i in range(total_batch):
+            start = i * batch_size
+            stop = min(n, (i + 1) * batch_size)
+            x_batch = x[start:stop, :]
+            points_batch = sess.run(rep, {X: x_batch})
+            points[start:stop, :] = points_batch
         plt.scatter(points[:, 0], points[:, 1], s = 10)
         plt.savefig("representation.pdf")
         plt.close()
