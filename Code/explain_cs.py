@@ -7,7 +7,7 @@ import yaml
 
 
 def explain(load_model, x_means, y_means,
-            lambda_global = 0.5,
+            lambda_global = 0.5, init_mode = "zero",
             consecutive_steps = 10, learning_rate = 0.0005, clip_val = 5.0, min_iters = 2000, stopping_iters = 2000, tol = 0.0001, discount = 0.99, 
             verbose = False):
     
@@ -36,7 +36,12 @@ def explain(load_model, x_means, y_means,
     grad = tf.gradients(loss_op, [D])
 
     # Find the explanation
-    deltas = np.zeros((num_clusters - 1, n_input)) #Row i is the explanation for "Cluster 0 to Cluster i + 1"
+    if init_mode == "zero":
+        deltas = np.zeros((num_clusters - 1, n_input)) #Row i is the explanation for "Cluster 0 to Cluster i + 1"
+    elif init_mode == "mean":
+        deltas = np.zeros((num_clusters - 1, n_input))
+        for i in range(1, num_clusters):
+            deltas[i - 1] = x_means[i, :] - x_means[0, :]
 
     iter = 0
     best_iter = 0
