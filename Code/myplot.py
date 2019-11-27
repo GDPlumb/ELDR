@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 import numpy as np
 
+from misc import truncate
+
 def plot_polys(data_rep, vertices):
 
     num_clusters = len(vertices)
@@ -105,7 +107,7 @@ def plot_metrics(a, b, name = "plot_metrics.png"):
     plt.show()
     plt.close()
 
-def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  num_points = 50, name = "plot_explanation.png"):
+def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  k = None, num_points = 50, name = "plot_explanation.png"):
 
     # Find the explanation from c1 to c2
     if c1 == 0:
@@ -115,6 +117,9 @@ def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  nu
     else:
         d = -1.0 * deltas[c1 - 1] + deltas[c2 - 1]
     d = np.reshape(d, (1, d.shape[0]))
+    
+    if k is not None:
+        d = trucate(d, k)
    
     # Visualize the data
     fig, ax = plt.subplots(figsize=(20, 30))

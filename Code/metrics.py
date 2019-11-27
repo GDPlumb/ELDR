@@ -4,7 +4,9 @@ import numpy as np
 from sklearn.metrics.pairwise import euclidean_distances
 import tensorflow as tf
 
-def metrics(load_model, x, indices, deltas, epsilon):
+from misc import truncate
+
+def metrics(load_model, x, indices, deltas, epsilon, k = None):
     
     n_input = x.shape[1]
     num_clusters = len(indices)
@@ -32,6 +34,9 @@ def metrics(load_model, x, indices, deltas, epsilon):
                     d = -1.0 * deltas[initial - 1]
                 else:
                     d = -1.0 * deltas[initial - 1] + deltas[target - 1]
+                    
+                if k is not None:
+                    d = truncate(d, k)
                 
                 # Find the representation of the initial points after they have been transformed
                 rep_init = sess.run(rep, feed_dict={X: x_init, D: np.reshape(d, (1, n_input))})

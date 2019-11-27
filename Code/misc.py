@@ -15,5 +15,11 @@ def poly2labels(data_rep, vertices):
             if path.contains_points(data_rep[j, :].reshape((1,2))):
                 labels[j] = i
                 
-    return labels
-
+    return labels    
+    
+def truncate(values, k):
+    values = np.squeeze(values)
+    idx = (-np.abs(values)).argsort()[:k]
+    values_aprox = np.zeros(values.shape)
+    values_aprox[idx] = values[idx]
+    return values_aprox
