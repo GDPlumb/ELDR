@@ -116,10 +116,11 @@ def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  k 
         d = -1.0 * deltas[c1 - 1]
     else:
         d = -1.0 * deltas[c1 - 1] + deltas[c2 - 1]
-    d = np.reshape(d, (1, d.shape[0]))
     
     if k is not None:
-        d = trucate(d, k)
+        d = truncate(d, k)
+        
+    d = np.reshape(d, (1, d.shape[0]))
    
     # Visualize the data
     fig, ax = plt.subplots(figsize=(20, 30))
@@ -150,7 +151,7 @@ def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  k 
     
         # Plot the chosen points before perturbing them
         y_initial = sess.run(rep, feed_dict={X: points_initial, D: d_zeros})
-        plt.scatter(y_initial[:,0], y_initial[:,1], marker = "v", c = "green")
+        plt.scatter(y_initial[:,0], y_initial[:,1], marker = "v", c = "magenta")
     
         # Plot the chosen points after perturbing them
         y_after = sess.run(rep, feed_dict={X: points_initial, D: sign * d})
