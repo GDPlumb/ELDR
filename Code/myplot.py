@@ -172,7 +172,7 @@ def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  k 
     plt.close()
 
 
-def plot_similarity(deltas, deltas_original, name = "plot_similarity.png"):
+def plot_change(deltas, deltas_original, name = "plot_similarity.png"):
 
     num_clusters = deltas_original.shape[0] + 1
 
@@ -184,7 +184,10 @@ def plot_similarity(deltas, deltas_original, name = "plot_similarity.png"):
     plt.figure(figsize=(20, 10))
     
     plt.ylabel("Group Index")
+    plt.yticks(np.arange(0, num_clusters + 1, dtype=np.int))
     plt.xlabel("Feature Index")
+    plt.xticks(np.arange(0, deltas.shape[1] + 1, dtype=np.int))
+    plt.title("Change in Explanation (Normalized)")
     
     plt.imshow(diff, vmin = 0.0, vmax = np.max(np.abs(deltas_original)))
 
