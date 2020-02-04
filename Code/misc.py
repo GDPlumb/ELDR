@@ -37,12 +37,3 @@ def load(deltas, k, initial, target):
 
     return d
 
-# e_more should be a sparser vector than e_less
-# counts the percentage of e_more's explanation that is in features chosen by e_less
-def stability(e_more, e_less):
-    difference = 0
-    for i in range(e_more.shape[0]):
-        if e_less[i] != 0:
-            difference += np.abs(e_more[i])
-    return difference / np.sum(np.abs(e_more))
-
