@@ -71,7 +71,7 @@ def plot_groups(x, data_rep, num_clusters, labels, contour = None, name = "plot_
 
     return means, centers, indices
     
-def plot_metrics(a, b, name = "plot_metrics.png"):
+def plot_metrics(a, b, name = "plot_metrics.png", fontsize = 55, labelsize = 40):
 
     # Set up figure and image grid
     fig = plt.figure(figsize=(20, 10))
@@ -89,25 +89,28 @@ def plot_metrics(a, b, name = "plot_metrics.png"):
     # Add data to image grid
     c = 0
     for ax in grid:
+        ax.tick_params(axis = "both", which = "major", labelsize = labelsize)
+        
         if c == 0:
             im = ax.imshow(a, cmap = "RdYlGn", interpolation = "none", vmin = 0.0, vmax = 1.0)
-            ax.set_title("Correctness - " + str(np.round(np.mean(a), 3)))
-            ax.set_ylabel("Initial Group")
+            ax.set_title("Correctness - " + str(np.round(np.mean(a), 3)), fontsize = fontsize)
+            ax.set_ylabel("Initial Group", fontsize = fontsize)
         elif c == 1:
             im = ax.imshow(b, cmap = "RdYlGn", interpolation = "none", vmin = 0.0, vmax = 1.0)
-            ax.set_title("Coverage - "  + str(np.round(np.mean(b), 3)))
-        ax.set_xlabel("Target Group")
+            ax.set_title("Coverage - "  + str(np.round(np.mean(b), 3)), fontsize = fontsize)
+        ax.set_xlabel("Target Group", fontsize = fontsize)
         c += 1
 
     # Colorbar
     ax.cax.colorbar(im)
     ax.cax.toggle_label(True)
+    ax.cax.tick_params(labelsize = labelsize)
 
     plt.savefig(name)
     plt.show()
     plt.close()
 
-def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  k = None, num_points = 50, name = "plot_explanation.png"):
+def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  k = None, num_points = 50, name = "plot_explanation.png", feature_names = None):
 
     # Find the explanation from c1 to c2
     if c1 == 0:
@@ -165,14 +168,18 @@ def plot_explanation(load_model, x, data_rep, indices, deltas, a, b, c1, c2,  k 
     plt.scatter(feature_index, d)
     plt.title("Explanation for Group " + str(c1) + " to Group " + str(c2))
     plt.ylabel("Change applied")
-    plt.xlabel("Feature Index")
+    if feature_names is None:
+        plt.xlabel("Feature Index")
+    else:
+        plt.xlabel("Feature")
+        plt.xticks(range(d.shape[1]), feature_names, rotation=90, fontsize = 40)
 
     plt.savefig(name)
     plt.show()
     plt.close()
 
 
-def plot_change(deltas, deltas_original, name = "plot_similarity.png"):
+def plot_change(deltas, deltas_original, name = "plot_similarity.png", feature_names = None):
 
     num_clusters = deltas_original.shape[0] + 1
 
@@ -183,10 +190,15 @@ def plot_change(deltas, deltas_original, name = "plot_similarity.png"):
     
     plt.figure(figsize=(20, 10))
     
-    plt.ylabel("Group Index")
-    plt.yticks(np.arange(0, num_clusters + 1, dtype=np.int))
-    plt.xlabel("Feature Index")
-    plt.xticks(np.arange(0, deltas.shape[1] + 1, dtype=np.int))
+    plt.ylabel("Basis Explanation")
+    plt.yticks(np.arange(0, num_clusters + 1, dtype=np.int), labels = 1 + np.arange(0, num_clusters + 1, dtype=np.int))
+    if feature_names is None:
+        plt.xlabel("Feature Index")
+        plt.xticks(np.arange(0, deltas.shape[1] + 1, dtype=np.int))
+    else:
+        plt.xlabel("Feature")
+        plt.xticks(np.arange(0, deltas.shape[1] + 1, dtype=np.int), feature_names, rotation=90, fontsize = 40)
+    
     plt.title("Change in Explanation (Normalized)")
     
     plt.imshow(diff, vmin = 0.0, vmax = np.max(np.abs(deltas_original)))
